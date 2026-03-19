@@ -1,65 +1,182 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import Image from "next/image";
+import Link from "next/link";
+import { Sparkles, Luggage, Plus, ChevronRight, Shirt, FolderOpen, CalendarPlus } from "lucide-react";
+import { clothingItems, wardrobeStats } from "@/data/wardrobe";
+import { outfitOfTheDay } from "@/data/outfits";
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function formatDate() {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+const quickActions = [
+  {
+    label: "Plan an outfit",
+    href: "/stylist",
+    icon: Sparkles,
+    gradient: "from-blush-100 to-blush-50",
+  },
+  {
+    label: "Start packing",
+    href: "/trips",
+    icon: Luggage,
+    gradient: "from-warm-100 to-warm-50",
+  },
+  {
+    label: "Add to wardrobe",
+    href: "/wardrobe",
+    icon: Plus,
+    gradient: "from-blush-50 to-warm-50",
+  },
+];
+
+const recentItems = clothingItems
+  .sort((a, b) => a.addedDaysAgo - b.addedDaysAgo)
+  .slice(0, 6);
+
+const ootdItems = clothingItems.filter((item) =>
+  outfitOfTheDay.itemIds.includes(item.id)
+);
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="mx-auto w-full max-w-3xl space-y-8 px-4 py-6 lg:px-6 lg:py-8">
+      {/* Greeting */}
+      <section>
+        <h1 className="text-2xl font-bold tracking-tight text-warm-900">
+          {getGreeting()}, Kaitlyn
+        </h1>
+        <p className="mt-0.5 text-sm text-warm-500">{formatDate()}</p>
+      </section>
+
+      {/* Quick Actions */}
+      <section className="grid grid-cols-3 gap-3">
+        {quickActions.map(({ label, href, icon: Icon, gradient }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`group flex flex-col items-center gap-2.5 rounded-2xl bg-gradient-to-b ${gradient} p-4 text-center transition-shadow hover:shadow-md`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface shadow-sm">
+              <Icon className="h-5 w-5 text-blush-500" />
+            </div>
+            <span className="text-xs font-medium leading-tight text-warm-700">
+              {label}
+            </span>
+          </Link>
+        ))}
+      </section>
+
+      {/* Recently Added */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-base font-semibold text-warm-900">
+            Recently added
+          </h2>
+          <Link
+            href="/wardrobe"
+            className="flex items-center gap-0.5 text-xs font-medium text-blush-500 hover:text-blush-600"
           >
-            Documentation
-          </a>
+            View all <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
-      </main>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {recentItems.map((item) => (
+            <div key={item.id} className="w-28 shrink-0">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-warm-100">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                  sizes="112px"
+                />
+              </div>
+              <p className="mt-1.5 truncate text-xs font-medium text-warm-800">
+                {item.name}
+              </p>
+              <p className="text-[10px] text-warm-400">{item.category}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Outfit of the Day */}
+      <section>
+        <h2 className="mb-3 text-base font-semibold text-warm-900">
+          Outfit of the day
+        </h2>
+        <div className="overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60">
+          <div className="grid grid-cols-4 gap-px bg-warm-100">
+            {ootdItems.map((item) => (
+              <div key={item.id} className="relative aspect-square bg-warm-50">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 25vw, 180px"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="p-4">
+            <h3 className="font-semibold text-warm-900">
+              {outfitOfTheDay.name}
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-warm-500">
+              {outfitOfTheDay.description}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Wardrobe at a Glance */}
+      <section>
+        <h2 className="mb-3 text-base font-semibold text-warm-900">
+          Wardrobe at a glance
+        </h2>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            {
+              label: "Total items",
+              value: wardrobeStats.totalItems,
+              icon: Shirt,
+            },
+            {
+              label: "Categories",
+              value: wardrobeStats.categories,
+              icon: FolderOpen,
+            },
+            {
+              label: "Added this month",
+              value: wardrobeStats.addedThisMonth,
+              icon: CalendarPlus,
+            },
+          ].map(({ label, value, icon: Icon }) => (
+            <div
+              key={label}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-warm-200/60"
+            >
+              <Icon className="h-4.5 w-4.5 text-blush-400" />
+              <span className="text-xl font-bold text-warm-900">{value}</span>
+              <span className="text-[11px] text-warm-400">{label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
