@@ -36,7 +36,7 @@ const quickActions = [
   },
   {
     label: "Add to wardrobe",
-    href: "/wardrobe",
+    href: "/wardrobe/add",
     icon: Plus,
     gradient: "from-blush-50 to-warm-50",
   },
