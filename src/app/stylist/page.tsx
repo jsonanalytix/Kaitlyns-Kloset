@@ -113,7 +113,7 @@ export default function StylistPage() {
       </div>
 
       {/* Input area */}
-      <div className="shrink-0 border-t border-warm-200 bg-surface px-4 pb-22 pt-3 lg:pb-4">
+      <div className="shrink-0 border-t border-warm-200 bg-surface px-4 pt-3 lg:pb-4" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}>
         <div className="mx-auto max-w-3xl">
           {/* Quick context chips */}
           <div className="mb-3 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -141,12 +141,12 @@ export default function StylistPage() {
                 }
               }}
               placeholder="Describe your occasion, mood, or ask for ideas..."
-              className="flex-1 rounded-xl border border-warm-200 bg-background py-2.5 pl-4 pr-4 text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+              className="flex-1 rounded-xl border border-warm-200 bg-background py-2.5 pl-4 pr-4 text-base sm:text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
             />
             <button
               onClick={() => handleSend()}
               disabled={!input.trim()}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blush-500 text-white transition-all hover:bg-blush-600 disabled:opacity-40 disabled:hover:bg-blush-500"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blush-500 text-white transition-all hover:bg-blush-600 active:scale-95 disabled:opacity-40 disabled:hover:bg-blush-500"
             >
               <Send className="h-4 w-4" />
             </button>

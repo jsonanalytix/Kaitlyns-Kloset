@@ -32,7 +32,7 @@ export default function ItemDetailClient({ id }: { id: string }) {
       .filter(Boolean);
 
   return (
-    <div className="mx-auto w-full max-w-3xl pb-24 lg:pb-8">
+    <div className="mx-auto w-full max-w-3xl pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-8">
       {/* Hero image */}
       <div className="relative aspect-[4/5] w-full bg-warm-100 sm:aspect-[3/2]">
         <Image
@@ -45,7 +45,7 @@ export default function ItemDetailClient({ id }: { id: string }) {
         />
         <Link
           href="/wardrobe"
-          className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm transition-colors hover:bg-surface"
+          className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-surface/80 backdrop-blur-sm transition-colors hover:bg-surface active:scale-95"
         >
           <ArrowLeft className="h-5 w-5 text-warm-800" />
         </Link>

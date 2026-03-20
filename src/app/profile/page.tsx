@@ -98,7 +98,7 @@ export default function ProfilePage() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-warm-50/50 ${
+              className={`flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-warm-50/50 active:bg-warm-100 ${
                 index < menuItems.length - 1
                   ? "border-b border-warm-100"
                   : ""

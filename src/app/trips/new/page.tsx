@@ -68,7 +68,7 @@ export default function NewTripPage() {
               placeholder="e.g., Weekend in Austin"
               value={tripName}
               onChange={(e) => setTripName(e.target.value)}
-              className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+              className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
             />
           </div>
 
@@ -81,7 +81,7 @@ export default function NewTripPage() {
               placeholder="e.g., Austin, TX"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+              className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
             />
           </div>
 
@@ -94,7 +94,7 @@ export default function NewTripPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+                className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
               />
             </div>
             <div>
@@ -105,7 +105,7 @@ export default function NewTripPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+                className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ export default function NewTripPage() {
 
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blush-600"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blush-500 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blush-600 active:bg-blush-600 active:scale-[0.98]"
         >
           <Sparkles className="h-4 w-4" />
           Generate Packing Plan

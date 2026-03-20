@@ -200,7 +200,7 @@ export default function AddItemPage() {
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
               placeholder="e.g., Cream Linen Blouse"
-              className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+              className="w-full rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
             />
           </div>
 
@@ -214,7 +214,7 @@ export default function AddItemPage() {
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, category: e.target.value }))
               }
-              className="w-full appearance-none rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+              className="w-full appearance-none rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
             >
               <option value="">Select a category</option>
               {categoryOptions.map((cat) => (
@@ -320,7 +320,7 @@ export default function AddItemPage() {
                   }
                 }}
                 placeholder="Type a tag and press Enter"
-                className="flex-1 rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+                className="flex-1 rounded-xl border border-warm-200 bg-surface px-4 py-2.5 text-base sm:text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
               />
               <button
                 onClick={addTag}
@@ -420,7 +420,7 @@ export default function AddItemPage() {
         {currentStep > 1 ? (
           <button
             onClick={() => setCurrentStep((s) => s - 1)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-surface py-3 text-sm font-medium text-warm-700 transition-colors hover:bg-warm-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-surface py-3 text-sm font-medium text-warm-700 transition-colors hover:bg-warm-50 active:bg-warm-100"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -428,7 +428,7 @@ export default function AddItemPage() {
         ) : (
           <button
             onClick={() => router.push("/wardrobe")}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-surface py-3 text-sm font-medium text-warm-700 transition-colors hover:bg-warm-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-surface py-3 text-sm font-medium text-warm-700 transition-colors hover:bg-warm-50 active:bg-warm-100"
           >
             <ArrowLeft className="h-4 w-4" />
             Cancel
@@ -442,7 +442,7 @@ export default function AddItemPage() {
               (currentStep === 1 && !canProceedStep1) ||
               (currentStep === 2 && !canProceedStep2)
             }
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blush-600 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blush-600 active:bg-blush-600 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
             <ArrowRight className="h-4 w-4" />
@@ -450,7 +450,7 @@ export default function AddItemPage() {
         ) : (
           <button
             onClick={handleSave}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blush-600"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blush-600 active:bg-blush-600"
           >
             <Check className="h-4 w-4" />
             Save to Wardrobe
@@ -460,7 +460,7 @@ export default function AddItemPage() {
 
       {/* Success toast */}
       {showToast && (
-        <div className="fixed bottom-28 left-1/2 z-50 -translate-x-1/2 lg:bottom-8">
+        <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 -translate-x-1/2 lg:bottom-8">
           <div className="flex items-center gap-2 rounded-full bg-warm-800 px-5 py-3 text-sm font-medium text-white shadow-lg">
             <Check className="h-4 w-4 text-green-400" />
             Item saved to your wardrobe!

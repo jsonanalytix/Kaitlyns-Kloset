@@ -69,7 +69,7 @@ export default function WardrobePage() {
             placeholder="Search by name, color, or tag..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-warm-200 bg-surface py-2.5 pl-9 pr-4 text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
+            className="w-full rounded-xl border border-warm-200 bg-surface py-2.5 pl-9 pr-4 text-base sm:text-sm text-warm-800 placeholder:text-warm-400 focus:border-blush-300 focus:outline-none focus:ring-2 focus:ring-blush-100"
           />
         </div>
         <div className="relative">
@@ -156,7 +156,7 @@ export default function WardrobePage() {
             <Link
               key={item.id}
               href={`/wardrobe/${item.id}`}
-              className="group overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60 transition-shadow hover:shadow-md"
+              className="group overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60 transition-all hover:shadow-md active:scale-[0.98]"
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-warm-100">
                 <Image
@@ -189,7 +189,7 @@ export default function WardrobePage() {
       {/* Floating action button */}
       <Link
         href="/wardrobe/add"
-        className="fixed bottom-24 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-blush-500 text-white shadow-lg transition-transform hover:scale-105 hover:bg-blush-600 active:scale-95 lg:bottom-8 lg:right-8"
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-blush-500 text-white shadow-lg transition-transform hover:scale-105 hover:bg-blush-600 active:scale-95 lg:bottom-8 lg:right-8"
       >
         <Plus className="h-6 w-6" />
       </Link>

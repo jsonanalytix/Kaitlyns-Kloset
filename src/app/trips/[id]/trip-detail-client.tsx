@@ -162,7 +162,7 @@ export default function TripDetailClient({ id }: { id: string }) {
                   onClick={() =>
                     setExpandedDay(isExpanded ? null : day.day)
                   }
-                  className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-warm-50/50"
+                  className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-warm-50/50 active:bg-warm-50"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blush-50 text-sm font-bold text-blush-600">

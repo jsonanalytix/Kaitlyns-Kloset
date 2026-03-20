@@ -3,15 +3,15 @@ import Image from "next/image";
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-warm-200 bg-surface/80 px-4 backdrop-blur-md lg:px-6">
+    <header className="sticky top-0 z-30 flex shrink-0 items-center justify-between border-b border-warm-200 bg-surface/80 px-4 backdrop-blur-md lg:px-6" style={{ paddingTop: "env(safe-area-inset-top, 0px)", height: "calc(4rem + env(safe-area-inset-top, 0px))" }}>
       <span className="text-lg font-semibold tracking-tight text-warm-900">
         Kaitlyn&rsquo;s Kloset
       </span>
 
-      <div className="flex items-center gap-3">
-        <button className="relative rounded-full p-2 text-warm-500 transition-colors hover:bg-warm-100 hover:text-warm-700">
+      <div className="flex items-center gap-1">
+        <button className="relative flex h-11 w-11 items-center justify-center rounded-full text-warm-500 transition-colors hover:bg-warm-100 hover:text-warm-700">
           <Bell className="h-5 w-5" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blush-500" />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-blush-500" />
         </button>
 
         <Image

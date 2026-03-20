@@ -67,7 +67,7 @@ export default function HomePage() {
           <Link
             key={href}
             href={href}
-            className={`group flex flex-col items-center gap-2.5 rounded-2xl bg-gradient-to-b ${gradient} p-4 text-center transition-shadow hover:shadow-md`}
+            className={`group flex flex-col items-center gap-2.5 rounded-2xl bg-gradient-to-b ${gradient} p-4 text-center transition-all hover:shadow-md active:scale-[0.97]`}
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface shadow-sm">
               <Icon className="h-5 w-5 text-blush-500" />

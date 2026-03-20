@@ -30,7 +30,7 @@ export default function TripsPage() {
         </div>
         <Link
           href="/trips/new"
-          className="flex items-center gap-2 rounded-xl bg-blush-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blush-600"
+          className="flex items-center gap-2 rounded-xl bg-blush-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blush-600 active:bg-blush-600 active:scale-95"
         >
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">New Trip</span>
@@ -42,7 +42,7 @@ export default function TripsPage() {
           <Link
             key={trip.id}
             href={`/trips/${trip.id}`}
-            className="group block overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60 transition-shadow hover:shadow-md"
+            className="group block overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60 transition-all hover:shadow-md active:scale-[0.98]"
           >
             <div className="relative h-40 overflow-hidden bg-warm-100 sm:h-48">
               <Image
@@ -62,18 +62,18 @@ export default function TripsPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-4 text-sm text-warm-600">
+            <div className="flex flex-wrap items-center justify-between gap-2 p-4">
+              <div className="flex flex-wrap items-center gap-3 text-sm text-warm-600">
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-warm-400" />
-                  <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
+                  <Calendar className="h-4 w-4 shrink-0 text-warm-400" />
+                  <span className="whitespace-nowrap">{formatDateRange(trip.startDate, trip.endDate)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Luggage className="h-4 w-4 text-warm-400" />
-                  <span>{trip.luggageLabel}</span>
+                  <Luggage className="h-4 w-4 shrink-0 text-warm-400" />
+                  <span className="whitespace-nowrap">{trip.luggageLabel}</span>
                 </div>
               </div>
-              <span className="rounded-full bg-blush-50 px-3 py-1 text-xs font-medium text-blush-600">
+              <span className="shrink-0 rounded-full bg-blush-50 px-3 py-1 text-xs font-medium text-blush-600">
                 {trip.totalItems} items packed
               </span>
             </div>
