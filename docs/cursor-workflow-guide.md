@@ -144,6 +144,7 @@ Now you work through the build plan, one checkbox at a time. **You use the exact
 
 ---
 
+
 **This is the only prompt you need for the entire build.** Paste the exact same thing in a new conversation for every task. The agent reads the plan, finds the next unchecked box, builds it, pushes the code to GitHub, and checks it off. You never have to edit the prompt.
 
 #### How to View Your App

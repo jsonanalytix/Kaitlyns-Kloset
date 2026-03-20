@@ -3,16 +3,17 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Search, Check, X } from "lucide-react";
-import { clothingItems, categories } from "@/data/wardrobe";
-import type { ClothingItem } from "@/data/wardrobe";
+import { categories, type ClothingItem } from "@/lib/queries/wardrobe";
 
 interface ItemSelectorGridProps {
+  allItems: ClothingItem[];
   selectedIds: string[];
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
 }
 
 export default function ItemSelectorGrid({
+  allItems,
   selectedIds,
   onToggle,
   onRemove,
@@ -21,13 +22,13 @@ export default function ItemSelectorGrid({
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredItems = useMemo(() => {
-    let items = clothingItems;
+    let result = allItems;
     if (activeCategory !== "All") {
-      items = items.filter((item) => item.category === activeCategory);
+      result = result.filter((item) => item.category === activeCategory);
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      items = items.filter(
+      result = result.filter(
         (item) =>
           item.name.toLowerCase().includes(q) ||
           item.category.toLowerCase().includes(q) ||
@@ -35,11 +36,11 @@ export default function ItemSelectorGrid({
           item.tags.some((t) => t.toLowerCase().includes(q)),
       );
     }
-    return items;
-  }, [activeCategory, searchQuery]);
+    return result;
+  }, [allItems, activeCategory, searchQuery]);
 
   const selectedItems = selectedIds
-    .map((id) => clothingItems.find((item) => item.id === id))
+    .map((id) => allItems.find((item) => item.id === id))
     .filter((item): item is ClothingItem => item != null);
 
   return (

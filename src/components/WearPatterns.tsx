@@ -1,14 +1,40 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp, Ghost, Lock, Sparkles } from "lucide-react";
-import { clothingItems } from "@/data/wardrobe";
-import { getMostWornItems, getLeastWornItems } from "@/data/calendar";
+import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
+import { getMostWornItems, getLeastWornItems } from "@/lib/queries/calendar";
 
 export default function WearPatterns() {
-  const topItems = getMostWornItems(5);
-  const bottomItems = getLeastWornItems(5);
+  const [allItems, setAllItems] = useState<ClothingItem[]>([]);
+  const [topItems, setTopItems] = useState<{ itemId: string; count: number }[]>(
+    [],
+  );
+  const [bottomItems, setBottomItems] = useState<
+    { itemId: string; count: number }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([getWardrobeItems(), getMostWornItems(5), getLeastWornItems(5)])
+      .then(([items, top, bottom]) => {
+        setAllItems(items);
+        setTopItems(top);
+        setBottomItems(bottom);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <div className="h-40 animate-pulse rounded-2xl bg-warm-100" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -31,7 +57,7 @@ export default function WearPatterns() {
         </h3>
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {topItems.map(({ itemId, count }) => {
-            const item = clothingItems.find((i) => i.id === itemId);
+            const item = allItems.find((i) => i.id === itemId);
             if (!item) return null;
             return (
               <Link
@@ -74,7 +100,7 @@ export default function WearPatterns() {
         </p>
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {bottomItems.map(({ itemId, count }) => {
-            const item = clothingItems.find((i) => i.id === itemId);
+            const item = allItems.find((i) => i.id === itemId);
             if (!item) return null;
             return (
               <Link

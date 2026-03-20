@@ -4,10 +4,16 @@ import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Camera, Check, ChevronLeft } from "lucide-react";
+import { ArrowLeft, Camera, Check, ChevronLeft, Loader2 } from "lucide-react";
 import ItemSelectorGrid from "./ItemSelectorGrid";
-import { clothingItems } from "@/data/wardrobe";
-import type { ClothingItem } from "@/data/wardrobe";
+import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
+import { logEntry } from "@/lib/queries/calendar";
+import { uploadCalendarPhoto } from "@/lib/storage";
+import {
+  getCurrentWeather,
+  getUserPosition,
+  type CurrentWeather,
+} from "@/lib/api/weather";
 
 const OCCASIONS = ["Work", "Casual", "Date Night", "Special Event", "Workout", "Travel"];
 
@@ -40,10 +46,31 @@ export default function OutfitLogger({
   const [selectedIds, setSelectedIds] = useState<string[]>(preSelectedItemIds);
   const [occasion, setOccasion] = useState<string | null>(null);
   const [mood, setMood] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [allItems, setAllItems] = useState<ClothingItem[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [weather, setWeather] = useState<CurrentWeather | null>(null);
+
+  useEffect(() => {
+    getWardrobeItems()
+      .then(setAllItems)
+      .finally(() => setItemsLoading(false));
+
+    getUserPosition()
+      .then((pos) => {
+        if (pos) return getCurrentWeather(pos.coords.latitude, pos.coords.longitude);
+        return null;
+      })
+      .then((w) => {
+        if (w) setWeather(w);
+      })
+      .catch(() => {});
+  }, []);
 
   const selectedItems = selectedIds
-    .map((id) => clothingItems.find((item) => item.id === id))
+    .map((id) => allItems.find((item) => item.id === id))
     .filter((item): item is ClothingItem => item != null);
 
   const handleToggle = useCallback((id: string) => {
@@ -60,7 +87,14 @@ export default function OutfitLogger({
     const file = e.target.files?.[0];
     if (!file) return;
     if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
   }
 
   useEffect(() => {
@@ -69,8 +103,35 @@ export default function OutfitLogger({
     };
   }, [photoPreview]);
 
-  function handleSave() {
-    setStep(3);
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+
+    try {
+      let photoUrl: string | undefined;
+      if (photoFile) {
+        photoUrl = await uploadCalendarPhoto(photoFile, targetDate);
+      }
+
+      const outfitName = selectedItems.map((i) => i.name).join(" + ");
+
+      await logEntry({
+        date: targetDate,
+        outfitName,
+        itemIds: selectedIds,
+        occasion: occasion ?? undefined,
+        mood: mood || undefined,
+        photoUrl,
+        weatherTemp: weather?.temp,
+        weatherCondition: weather?.condition,
+        weatherDescription: weather?.description,
+      });
+
+      setStep(3);
+    } catch (err) {
+      console.error("Failed to log outfit:", err);
+      setSaving(false);
+    }
   }
 
   useEffect(() => {
@@ -81,8 +142,6 @@ export default function OutfitLogger({
     return () => clearTimeout(timeout);
   }, [step, date, router]);
 
-  // ── Step 3: Success ──
-
   if (step === 3) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
@@ -90,8 +149,6 @@ export default function OutfitLogger({
       </div>
     );
   }
-
-  // ── Step 2: Add Context ──
 
   if (step === 2) {
     return (
@@ -114,6 +171,14 @@ export default function OutfitLogger({
         </div>
 
         <StepIndicator current={2} />
+
+        {weather && (
+          <div className="flex items-center gap-2 rounded-xl bg-warm-50 px-3 py-2 text-xs text-warm-600">
+            <span className="font-semibold">{weather.temp}&deg;F</span>
+            <span>{weather.condition}</span>
+            <span className="text-warm-400">&mdash; {weather.description}</span>
+          </div>
+        )}
 
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           {selectedItems.map((item) => (
@@ -184,10 +249,7 @@ export default function OutfitLogger({
                 sizes="160px"
               />
               <button
-                onClick={() => {
-                  URL.revokeObjectURL(photoPreview);
-                  setPhotoPreview(null);
-                }}
+                onClick={clearPhoto}
                 className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-warm-800/60 text-white backdrop-blur-sm transition-colors hover:bg-warm-800/80"
               >
                 <span className="text-sm font-bold leading-none">&times;</span>
@@ -214,23 +276,27 @@ export default function OutfitLogger({
         <div className="flex items-center gap-3 pt-2">
           <button
             onClick={() => setStep(1)}
+            disabled={saving}
             className="rounded-full bg-warm-100 px-5 py-2.5 text-xs font-medium text-warm-600 transition-all hover:bg-warm-200 active:scale-[0.97]"
           >
             Back
           </button>
           <button
             onClick={handleSave}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-blush-500 px-5 py-2.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-blush-600 active:scale-[0.97]"
+            disabled={saving}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-blush-500 px-5 py-2.5 text-xs font-medium text-white shadow-sm transition-all hover:bg-blush-600 active:scale-[0.97] disabled:opacity-60"
           >
-            <Check className="h-3.5 w-3.5" />
-            Save Outfit
+            {saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Check className="h-3.5 w-3.5" />
+            )}
+            {saving ? "Saving..." : "Save Outfit"}
           </button>
         </div>
       </div>
     );
   }
-
-  // ── Step 1: Select Items ──
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 px-4 py-6 lg:px-6 lg:py-8">
@@ -253,6 +319,7 @@ export default function OutfitLogger({
       <StepIndicator current={1} />
 
       <ItemSelectorGrid
+        allItems={allItems}
         selectedIds={selectedIds}
         onToggle={handleToggle}
         onRemove={handleRemove}
@@ -276,8 +343,6 @@ export default function OutfitLogger({
     </div>
   );
 }
-
-// ── Shared sub-components ──
 
 function StepIndicator({ current }: { current: 1 | 2 }) {
   return (

@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
 import {
   getEntriesForMonth,
-  getEntryForDate,
-  currentMonthStats,
-} from "@/data/calendar";
-import type { CalendarEntry } from "@/data/calendar";
-import { clothingItems } from "@/data/wardrobe";
-import type { ClothingItem } from "@/data/wardrobe";
+  getMonthlyStats,
+  getWearCounts,
+  type CalendarEntry,
+  type MonthlyStats,
+} from "@/lib/queries/calendar";
+import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
 import CalendarStatsBar from "@/components/CalendarStatsBar";
 import CalendarGrid from "@/components/CalendarGrid";
 import CalendarDayDetail from "@/components/CalendarDayDetail";
@@ -19,9 +19,9 @@ function todayISO() {
   return new Date().toISOString().split("T")[0];
 }
 
-function resolveItems(ids: string[]): ClothingItem[] {
+function resolveItems(ids: string[], items: ClothingItem[]): ClothingItem[] {
   return ids
-    .map((id) => clothingItems.find((item) => item.id === id))
+    .map((id) => items.find((item) => item.id === id))
     .filter((item): item is ClothingItem => item != null);
 }
 
@@ -65,10 +65,30 @@ export default function CalendarPage() {
   const [month, setMonth] = useState(currentMonth);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const entries = useMemo(
-    () => getEntriesForMonth(year, month),
-    [year, month],
+  const [allItems, setAllItems] = useState<ClothingItem[]>([]);
+  const [monthlyStats, setMonthlyStats] = useState<MonthlyStats | null>(null);
+  const [wearCountsMap, setWearCountsMap] = useState<Record<string, number>>(
+    {},
   );
+  const [loading, setLoading] = useState(true);
+
+  const [entries, setEntries] = useState<CalendarEntry[]>([]);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      getEntriesForMonth(year, month),
+      getWardrobeItems(),
+      getMonthlyStats(year, month),
+      getWearCounts(),
+    ]).then(([entriesData, itemsData, statsData, wearData]) => {
+      setEntries(entriesData);
+      setAllItems(itemsData);
+      setMonthlyStats(statsData);
+      setWearCountsMap(wearData);
+      setLoading(false);
+    });
+  }, [year, month]);
 
   const isCurrentMonth = year === currentYear && month === currentMonth;
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -78,10 +98,15 @@ export default function CalendarPage() {
     [entries],
   );
 
-  const streak = isCurrentMonth ? currentMonthStats.currentStreak : 0;
+  const streak =
+    isCurrentMonth && monthlyStats ? monthlyStats.currentStreak : 0;
 
-  const selectedEntry = selectedDate ? getEntryForDate(selectedDate) : null;
-  const selectedItems = selectedEntry ? resolveItems(selectedEntry.itemIds) : [];
+  const selectedEntry = selectedDate
+    ? (entries.find((e) => e.date === selectedDate) ?? null)
+    : null;
+  const selectedItems = selectedEntry
+    ? resolveItems(selectedEntry.itemIds, allItems)
+    : [];
 
   function handlePrevMonth() {
     setSelectedDate(null);
@@ -109,8 +134,20 @@ export default function CalendarPage() {
     setSelectedDate(null);
   }
 
-  function handleSelectDate(date: string) {
+  const handleSelectDate = useCallback((date: string) => {
     setSelectedDate((prev) => (prev === date ? null : date));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 lg:px-6 lg:py-8">
+        <div className="space-y-4">
+          <div className="h-8 w-32 animate-pulse rounded-lg bg-warm-100" />
+          <div className="h-24 animate-pulse rounded-2xl bg-warm-100" />
+          <div className="h-64 animate-pulse rounded-2xl bg-warm-100" />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -136,7 +173,19 @@ export default function CalendarPage() {
         daysLogged={entries.length}
         totalDays={daysInMonth}
         uniqueItemsWorn={uniqueItemsWorn}
-        mostWornItem={mostWornItem}
+        mostWornItem={
+          mostWornItem
+            ? {
+                name:
+                  allItems.find((i) => i.id === mostWornItem.itemId)?.name ??
+                  "Unknown",
+                imageUrl:
+                  allItems.find((i) => i.id === mostWornItem.itemId)
+                    ?.imageUrl ?? "",
+                wearCount: mostWornItem.wearCount,
+              }
+            : null
+        }
         currentStreak={streak}
       />
 
@@ -144,6 +193,7 @@ export default function CalendarPage() {
         year={year}
         month={month}
         entries={entries}
+        allItems={allItems}
         selectedDate={selectedDate}
         onSelectDate={handleSelectDate}
         onPrevMonth={handlePrevMonth}
@@ -155,6 +205,7 @@ export default function CalendarPage() {
         <CalendarDayDetail
           entry={selectedEntry}
           items={selectedItems}
+          wearCounts={wearCountsMap}
           onClose={() => setSelectedDate(null)}
         />
       )}

@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { X, Pencil } from "lucide-react";
-import type { CalendarEntry } from "@/data/calendar";
-import { getWearCount } from "@/data/calendar";
-import type { ClothingItem } from "@/data/wardrobe";
+import type { CalendarEntry } from "@/lib/queries/calendar";
+import type { ClothingItem } from "@/lib/queries/wardrobe";
 import WeatherContextBar from "./WeatherContextBar";
 
 interface CalendarDayDetailProps {
   entry: CalendarEntry;
   items: ClothingItem[];
+  wearCounts: Record<string, number>;
   onClose: () => void;
 }
 
@@ -24,6 +24,7 @@ function formatHeading(dateStr: string) {
 export default function CalendarDayDetail({
   entry,
   items,
+  wearCounts,
   onClose,
 }: CalendarDayDetailProps) {
   return (
@@ -50,7 +51,7 @@ export default function CalendarDayDetail({
 
       <div className="flex gap-2.5 overflow-x-auto px-4 pb-3 scrollbar-hide">
         {items.map((item) => {
-          const wears = getWearCount(item.id);
+          const wears = wearCounts[item.id] ?? 0;
           return (
             <Link
               key={item.id}

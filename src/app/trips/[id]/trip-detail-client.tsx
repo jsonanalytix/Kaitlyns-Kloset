@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,11 +16,11 @@ import {
   Droplets,
   BatteryCharging,
 } from "lucide-react";
-import { trips, forgottenEssentials } from "@/data/trips";
-import { clothingItems } from "@/data/wardrobe";
+import { getTripById, forgottenEssentials, type Trip } from "@/lib/queries/trips";
+import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
 
-function getItemById(id: string) {
-  return clothingItems.find((item) => item.id === id);
+function getItemById(itemId: string, items: ClothingItem[]) {
+  return items.find((item) => item.id === itemId);
 }
 
 const essentialIcons: Record<string, React.ElementType> = {
@@ -31,19 +31,40 @@ const essentialIcons: Record<string, React.ElementType> = {
 };
 
 export default function TripDetailClient({ id }: { id: string }) {
-  const trip = trips.find((t) => t.id === id);
+  const [trip, setTrip] = useState<Trip | null>(null);
+  const [allItems, setAllItems] = useState<ClothingItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"days" | "packing">("days");
   const [expandedDay, setExpandedDay] = useState<number | null>(1);
-  const [packedItems, setPackedItems] = useState<Record<string, boolean>>(
-    () => {
-      if (!trip) return {};
+  const [packedItems, setPackedItems] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    Promise.all([getTripById(id), getWardrobeItems()]).then(
+      ([tripData, itemsData]) => {
+        setTrip(tripData);
+        setAllItems(itemsData);
+        setLoading(false);
+      }
+    );
+  }, [id]);
+
+  useEffect(() => {
+    if (trip) {
       const initial: Record<string, boolean> = {};
       trip.packingList.forEach((item) => {
         initial[item.itemId] = item.packed;
       });
-      return initial;
+      setPackedItems(initial);
     }
-  );
+  }, [trip]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
 
   if (!trip) {
     return (
@@ -150,7 +171,7 @@ export default function TripDetailClient({ id }: { id: string }) {
           {trip.days.map((day) => {
             const isExpanded = expandedDay === day.day;
             const dayItems = day.outfitItemIds
-              .map(getItemById)
+              .map((itemId) => getItemById(itemId, allItems))
               .filter(Boolean);
 
             return (
@@ -249,7 +270,7 @@ export default function TripDetailClient({ id }: { id: string }) {
               </h3>
               <div className="space-y-2">
                 {items.map((packItem) => {
-                  const item = getItemById(packItem.itemId);
+                  const item = getItemById(packItem.itemId, allItems);
                   if (!item) return null;
                   const isPacked = packedItems[packItem.itemId];
 

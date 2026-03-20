@@ -1,27 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Check, RefreshCw, X, ChevronRight } from "lucide-react";
 import {
-  dailySuggestions,
-  currentMonthStats,
+  getDailySuggestions,
+  getMonthlyStats,
   getEntryForDate,
-} from "@/data/calendar";
-import { clothingItems } from "@/data/wardrobe";
-import type { ClothingItem } from "@/data/wardrobe";
+  type DailySuggestion,
+  type MonthlyStats,
+} from "@/lib/queries/calendar";
+import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
+import {
+  getCurrentWeather,
+  getUserPosition,
+  type CurrentWeather,
+} from "@/lib/api/weather";
 import WeatherContextBar from "./WeatherContextBar";
 import StreakBadge from "./StreakBadge";
 
 function getTodayISO() {
   return new Date().toISOString().split("T")[0];
-}
-
-function resolveItems(itemIds: string[]): ClothingItem[] {
-  return itemIds
-    .map((id) => clothingItems.find((item) => item.id === id))
-    .filter((item): item is ClothingItem => item != null);
 }
 
 function imageGridCols(count: number) {
@@ -31,15 +31,77 @@ function imageGridCols(count: number) {
 }
 
 export default function DailyLookModule() {
-  const todayEntry = getEntryForDate(getTodayISO());
-  const streak = currentMonthStats.currentStreak;
+  const [dailySuggestions, setDailySuggestions] = useState<DailySuggestion[]>(
+    [],
+  );
+  const [monthStats, setMonthStats] = useState<MonthlyStats | null>(null);
+  const [allItems, setAllItems] = useState<ClothingItem[]>([]);
+  const [todayEntry, setTodayEntry] = useState<
+    Awaited<ReturnType<typeof getEntryForDate>>
+  >(null);
+  const [liveWeather, setLiveWeather] = useState<CurrentWeather | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
   const [suggestionIndex, setSuggestionIndex] = useState(0);
-  const [isLogged, setIsLogged] = useState(!!todayEntry);
+  const [isLogged, setIsLogged] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
   const [loggedSuggestionIdx, setLoggedSuggestionIdx] = useState<number | null>(
     null,
   );
+
+  useEffect(() => {
+    const today = getTodayISO();
+    const now = new Date();
+    Promise.all([
+      getEntryForDate(today),
+      getDailySuggestions(),
+      getMonthlyStats(now.getFullYear(), now.getMonth() + 1),
+      getWardrobeItems(),
+    ])
+      .then(([entry, suggestions, stats, items]) => {
+        setTodayEntry(entry);
+        setDailySuggestions(suggestions.length > 0 ? suggestions : []);
+        setMonthStats(stats);
+        setAllItems(items);
+        setDataLoading(false);
+      })
+      .catch(() => setDataLoading(false));
+
+    getUserPosition()
+      .then((pos) => {
+        if (pos) return getCurrentWeather(pos.coords.latitude, pos.coords.longitude);
+        return null;
+      })
+      .then((weather) => {
+        if (weather) setLiveWeather(weather);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (todayEntry) setIsLogged(true);
+  }, [todayEntry]);
+
+  function resolveItems(itemIds: string[]): ClothingItem[] {
+    return itemIds
+      .map((id) => allItems.find((item) => item.id === id))
+      .filter((item): item is ClothingItem => item != null);
+  }
+
+  const streak = monthStats?.currentStreak ?? 0;
+
+  if (dataLoading || dailySuggestions.length === 0) {
+    return (
+      <section>
+        <h2 className="mb-3 text-base font-semibold text-warm-900">
+          Your daily look
+        </h2>
+        <div className="rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-warm-200/60">
+          <div className="h-32 animate-pulse rounded-lg bg-warm-100" />
+        </div>
+      </section>
+    );
+  }
 
   const suggestion = dailySuggestions[suggestionIndex];
   const suggestionItems = resolveItems(suggestion.itemIds);
@@ -90,17 +152,20 @@ export default function DailyLookModule() {
       ? loggedSource!.stylingNote
       : todayEntry?.weatherDescription;
 
-    const weatherTemp = useSuggestion
-      ? loggedSource!.weatherTemp
-      : (todayEntry?.weatherTemp ?? suggestion.weatherTemp);
+    const weatherTemp = liveWeather?.temp
+      ?? (useSuggestion
+        ? loggedSource!.weatherTemp
+        : (todayEntry?.weatherTemp ?? suggestion.weatherTemp));
 
-    const weatherCondition = useSuggestion
-      ? loggedSource!.weatherCondition
-      : (todayEntry?.weatherCondition ?? suggestion.weatherCondition);
+    const weatherCondition = liveWeather?.condition
+      ?? (useSuggestion
+        ? loggedSource!.weatherCondition
+        : (todayEntry?.weatherCondition ?? suggestion.weatherCondition));
 
-    const weatherDescription = useSuggestion
-      ? loggedSource!.weatherDescription
-      : (todayEntry?.weatherDescription ?? suggestion.weatherDescription);
+    const weatherDescription = liveWeather?.description
+      ?? (useSuggestion
+        ? loggedSource!.weatherDescription
+        : (todayEntry?.weatherDescription ?? suggestion.weatherDescription));
 
     const cols = imageGridCols(displayItems.length);
 
@@ -224,9 +289,9 @@ export default function DailyLookModule() {
       <div className="overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60">
         <div className="p-4 pb-3">
           <WeatherContextBar
-            temp={suggestion.weatherTemp}
-            condition={suggestion.weatherCondition}
-            description={suggestion.weatherDescription}
+            temp={liveWeather?.temp ?? suggestion.weatherTemp}
+            condition={liveWeather?.condition ?? suggestion.weatherCondition}
+            description={liveWeather?.description ?? suggestion.weatherDescription}
           />
         </div>
 

@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Calendar, Luggage, Plus } from "lucide-react";
-import { trips } from "@/data/trips";
+import { getTrips, type Trip } from "@/lib/queries/trips";
 
 function formatDateRange(start: string, end: string) {
   const s = new Date(start + "T00:00:00");
@@ -17,6 +18,21 @@ function formatDateRange(start: string, end: string) {
 }
 
 export default function TripsPage() {
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getTrips().then(setTrips).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
       <div className="flex items-center justify-between">

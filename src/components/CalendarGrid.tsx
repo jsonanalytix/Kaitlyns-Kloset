@@ -2,14 +2,14 @@
 
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { CalendarEntry } from "@/data/calendar";
-import { clothingItems } from "@/data/wardrobe";
-import type { ClothingItem } from "@/data/wardrobe";
+import type { CalendarEntry } from "@/lib/queries/calendar";
+import type { ClothingItem } from "@/lib/queries/wardrobe";
 
 interface CalendarGridProps {
   year: number;
   month: number;
   entries: CalendarEntry[];
+  allItems: ClothingItem[];
   selectedDate: string | null;
   onSelectDate: (date: string) => void;
   onPrevMonth: () => void;
@@ -41,9 +41,9 @@ function toISO(year: number, month: number, day: number) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function resolveItems(ids: string[]): ClothingItem[] {
+function resolveItems(ids: string[], items: ClothingItem[]): ClothingItem[] {
   return ids
-    .map((id) => clothingItems.find((item) => item.id === id))
+    .map((id) => items.find((item) => item.id === id))
     .filter((item): item is ClothingItem => item != null);
 }
 
@@ -92,6 +92,7 @@ export default function CalendarGrid({
   year,
   month,
   entries,
+  allItems,
   selectedDate,
   onSelectDate,
   onPrevMonth,
@@ -168,7 +169,9 @@ export default function CalendarGrid({
           const isToday = dateISO === today;
           const isSelected = dateISO === selectedDate;
           const isFuture = dateISO > today;
-          const thumbItems = entry ? resolveItems(entry.itemIds.slice(0, 4)) : [];
+          const thumbItems = entry
+            ? resolveItems(entry.itemIds.slice(0, 4), allItems)
+            : [];
 
           return (
             <button

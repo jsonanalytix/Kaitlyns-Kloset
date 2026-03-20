@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,9 +10,46 @@ import {
   Sparkles,
   Inbox,
 } from "lucide-react";
-import { savedOutfits, getItemsForOutfit, type StylistOutfit } from "@/data/stylist";
+import { getSavedOutfits, type StylistOutfit } from "@/lib/queries/stylist";
+import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
 
 export default function SavedOutfitsPage() {
+  const [savedOutfits, setSavedOutfits] = useState<StylistOutfit[]>([]);
+  const [allItems, setAllItems] = useState<ClothingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([getSavedOutfits(), getWardrobeItems()])
+      .then(([outfits, items]) => {
+        setSavedOutfits(outfits);
+        setAllItems(items);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/stylist"
+            className="flex h-9 w-9 items-center justify-center rounded-xl text-warm-500 transition-colors hover:bg-warm-100"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold tracking-tight text-warm-900">
+              Saved Outfits
+            </h1>
+            <div className="mt-2 h-4 w-32 animate-pulse rounded bg-warm-100" />
+          </div>
+        </div>
+        <div className="mt-6 h-48 animate-pulse rounded-2xl bg-warm-100" />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
       {/* Page header */}
@@ -54,7 +91,11 @@ export default function SavedOutfitsPage() {
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {savedOutfits.map((outfit) => (
-            <SavedOutfitCard key={outfit.id} outfit={outfit} />
+            <SavedOutfitCard
+              key={outfit.id}
+              outfit={outfit}
+              allItems={allItems}
+            />
           ))}
         </div>
       )}
@@ -62,9 +103,17 @@ export default function SavedOutfitsPage() {
   );
 }
 
-function SavedOutfitCard({ outfit }: { outfit: StylistOutfit }) {
+function SavedOutfitCard({
+  outfit,
+  allItems,
+}: {
+  outfit: StylistOutfit;
+  allItems: ClothingItem[];
+}) {
   const [expanded, setExpanded] = useState(false);
-  const items = getItemsForOutfit(outfit.itemIds);
+  const items = outfit.itemIds
+    .map((id) => allItems.find((i) => i.id === id))
+    .filter((i): i is ClothingItem => i != null);
 
   const formattedDate = new Date(outfit.savedDate).toLocaleDateString("en-US", {
     month: "short",

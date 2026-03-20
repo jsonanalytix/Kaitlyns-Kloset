@@ -1,12 +1,15 @@
 import Image from "next/image";
 import { Calendar, Layers, TrendingUp, Flame } from "lucide-react";
-import { clothingItems } from "@/data/wardrobe";
 
 interface CalendarStatsBarProps {
   daysLogged: number;
   totalDays: number;
   uniqueItemsWorn: number;
-  mostWornItem: { itemId: string; wearCount: number } | null;
+  mostWornItem: {
+    name: string;
+    imageUrl: string;
+    wearCount: number;
+  } | null;
   currentStreak: number;
 }
 
@@ -17,10 +20,6 @@ export default function CalendarStatsBar({
   mostWornItem,
   currentStreak,
 }: CalendarStatsBarProps) {
-  const mostWorn = mostWornItem
-    ? clothingItems.find((item) => item.id === mostWornItem.itemId)
-    : null;
-
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-warm-200/60">
@@ -44,12 +43,12 @@ export default function CalendarStatsBar({
       </div>
 
       <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-warm-200/60">
-        {mostWorn ? (
+        {mostWornItem ? (
           <>
             <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl">
               <Image
-                src={mostWorn.imageUrl}
-                alt={mostWorn.name}
+                src={mostWornItem.imageUrl}
+                alt={mostWornItem.name}
                 fill
                 className="object-cover"
                 sizes="36px"
@@ -57,10 +56,10 @@ export default function CalendarStatsBar({
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-warm-900">
-                {mostWorn.name}
+                {mostWornItem.name}
               </p>
               <p className="text-[11px] text-warm-400">
-                {mostWornItem!.wearCount}x this month
+                {mostWornItem.wearCount}x this month
               </p>
             </div>
           </>

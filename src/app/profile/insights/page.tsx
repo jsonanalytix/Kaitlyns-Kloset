@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,8 +11,8 @@ import {
   Sparkles,
   Leaf,
 } from "lucide-react";
-import { insightsData } from "@/data/user";
-import { clothingItems } from "@/data/wardrobe";
+import { getInsights, type InsightsData } from "@/lib/queries/user";
+import { getItemsByIds, type ClothingItem } from "@/lib/queries/wardrobe";
 import WearPatterns from "@/components/WearPatterns";
 import OutfitVarietyScore from "@/components/OutfitVarietyScore";
 
@@ -21,14 +22,33 @@ const gapIcons: Record<string, React.ElementType> = {
   sun: Sun,
 };
 
-const maxCategoryCount = Math.max(
-  ...insightsData.categoryBreakdown.map((c) => c.count)
-);
-
 export default function InsightsPage() {
-  const underusedItems = insightsData.underusedItemIds
-    .map((id) => clothingItems.find((item) => item.id === id))
-    .filter(Boolean);
+  const [insights, setInsights] = useState<InsightsData | null>(null);
+  const [underusedItems, setUnderusedItems] = useState<ClothingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getInsights()
+      .then(async (data) => {
+        setInsights(data);
+        const items = await getItemsByIds(data.underusedItemIds);
+        setUnderusedItems(items);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading || !insights) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
+
+  const maxCategoryCount = Math.max(
+    ...(insights?.categoryBreakdown.map((c) => c.count) ?? [1])
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
@@ -67,12 +87,12 @@ export default function InsightsPage() {
               stroke="#C9918F"
               strokeWidth="10"
               strokeLinecap="round"
-              strokeDasharray={`${(insightsData.wardrobeScore / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
+              strokeDasharray={`${(insights.wardrobeScore / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
             />
           </svg>
           <div className="absolute flex flex-col items-center">
             <span className="text-3xl font-bold text-warm-900">
-              {insightsData.wardrobeScore}
+              {insights.wardrobeScore}
             </span>
             <span className="text-[10px] font-medium text-warm-400">
               out of 100
@@ -80,7 +100,7 @@ export default function InsightsPage() {
           </div>
         </div>
         <p className="mt-3 text-sm font-semibold text-warm-700">
-          {insightsData.scoreLabel}
+          {insights.scoreLabel}
         </p>
         <p className="mt-1 max-w-xs text-center text-xs leading-relaxed text-warm-400">
           Based on category balance, versatility, and seasonal coverage
@@ -93,7 +113,7 @@ export default function InsightsPage() {
           Category Breakdown
         </h2>
         <div className="mt-4 space-y-3">
-          {insightsData.categoryBreakdown.map((cat) => (
+          {insights.categoryBreakdown.map((cat) => (
             <div key={cat.category}>
               <div className="mb-1 flex items-center justify-between text-xs">
                 <span className="font-medium text-warm-700">
@@ -124,7 +144,7 @@ export default function InsightsPage() {
           Pieces that would expand your outfit possibilities
         </p>
         <div className="mt-3 space-y-3">
-          {insightsData.gapSuggestions.map((gap) => {
+          {insights.gapSuggestions.map((gap) => {
             const Icon = gapIcons[gap.icon] || Sparkles;
             return (
               <div
@@ -161,30 +181,27 @@ export default function InsightsPage() {
           stylist to incorporate them
         </p>
         <div className="mt-3 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {underusedItems.map(
-            (item) =>
-              item && (
-                <Link
-                  key={item.id}
-                  href={`/wardrobe/${item.id}`}
-                  className="w-28 shrink-0"
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-warm-100">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.name}
-                      fill
-                      className="object-cover"
-                      sizes="112px"
-                    />
-                  </div>
-                  <p className="mt-1.5 truncate text-xs font-medium text-warm-800">
-                    {item.name}
-                  </p>
-                  <p className="text-[10px] text-warm-400">{item.category}</p>
-                </Link>
-              )
-          )}
+          {underusedItems.map((item) => (
+            <Link
+              key={item.id}
+              href={`/wardrobe/${item.id}`}
+              className="w-28 shrink-0"
+            >
+              <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-warm-100">
+                <Image
+                  src={item.imageUrl}
+                  alt={item.name}
+                  fill
+                  className="object-cover"
+                  sizes="112px"
+                />
+              </div>
+              <p className="mt-1.5 truncate text-xs font-medium text-warm-800">
+                {item.name}
+              </p>
+              <p className="text-[10px] text-warm-400">{item.category}</p>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -204,11 +221,11 @@ export default function InsightsPage() {
           <Leaf className="h-4.5 w-4.5 text-blush-500" />
           <h2 className="text-sm font-semibold text-warm-900">
             Seasonal Readiness —{" "}
-            {insightsData.seasonalReadiness.season}
+            {insights.seasonalReadiness.season}
           </h2>
         </div>
         <p className="mt-2 text-xs leading-relaxed text-warm-600">
-          {insightsData.seasonalReadiness.message}
+          {insights.seasonalReadiness.message}
         </p>
       </div>
     </div>

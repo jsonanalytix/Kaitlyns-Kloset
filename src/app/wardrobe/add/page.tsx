@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -10,7 +10,10 @@ import {
   ArrowRight,
   Check,
   X,
+  Loader2,
 } from "lucide-react";
+import { addItem } from "@/lib/queries/wardrobe";
+import { uploadWardrobeImage } from "@/lib/storage";
 
 const categoryOptions = ["Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories"];
 const seasonOptions = ["Spring", "Summer", "Fall", "Winter", "All-season"];
@@ -30,8 +33,6 @@ const colorSwatches = [
   { name: "Charcoal", hex: "#4A4A4A" },
 ];
 
-const MOCK_PREVIEW = "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=400&h=500&fit=crop";
-
 const steps = [
   { number: 1, label: "Photo" },
   { number: 2, label: "Details" },
@@ -40,9 +41,14 @@ const steps = [
 
 export default function AddItemPage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const [photoUploaded, setPhotoUploaded] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -54,6 +60,28 @@ export default function AddItemPage() {
     tags: [] as string[],
   });
   const [tagInput, setTagInput] = useState("");
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    };
+  }, [photoPreview]);
+
+  function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function clearPhoto() {
+    if (photoPreview) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
+  }
 
   const toggleSeason = (season: string) => {
     setFormData((prev) => ({
@@ -79,18 +107,61 @@ export default function AddItemPage() {
     }));
   };
 
-  const handleSave = () => {
-    setShowToast(true);
-    setTimeout(() => {
-      router.push("/wardrobe");
-    }, 1500);
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    setErrorMsg(null);
+
+    try {
+      let imageUrl = "";
+      if (photoFile) {
+        imageUrl = await uploadWardrobeImage(photoFile);
+      }
+
+      await addItem({
+        name: formData.name,
+        category: formData.category,
+        imageUrl,
+        color: formData.color,
+        colorHex: formData.colorHex,
+        season: formData.seasons.length === 1 ? formData.seasons[0] : "All-season",
+        formality: formData.formality || "Casual",
+        fabricWeight: "Midweight",
+        tags: formData.tags,
+      });
+
+      setShowToast(true);
+      setTimeout(() => {
+        router.push("/wardrobe");
+      }, 1500);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save item");
+      setSaving(false);
+    }
   };
 
-  const canProceedStep1 = photoUploaded;
+  const canProceedStep1 = !!photoFile;
   const canProceedStep2 = formData.name && formData.category && formData.color;
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 lg:px-6 lg:py-8">
+      {/* Hidden file inputs */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFileSelected}
+        className="hidden"
+      />
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelected}
+        className="hidden"
+      />
+
       {/* Progress indicator */}
       <div className="mb-8 flex items-center justify-center gap-2">
         {steps.map((step, idx) => (
@@ -136,16 +207,16 @@ export default function AddItemPage() {
             Upload a photo of your clothing item.
           </p>
 
-          {!photoUploaded ? (
+          {!photoPreview ? (
             <button
-              onClick={() => setPhotoUploaded(true)}
+              onClick={() => fileInputRef.current?.click()}
               className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-warm-300 bg-warm-50 px-6 py-16 transition-colors hover:border-blush-300 hover:bg-blush-50/30"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-warm-100">
                 <Camera className="h-7 w-7 text-warm-400" />
               </div>
               <span className="text-sm font-medium text-warm-600">
-                Tap to upload a photo
+                Tap to take or upload a photo
               </span>
               <span className="text-xs text-warm-400">
                 JPG, PNG, or HEIC up to 10MB
@@ -155,7 +226,7 @@ export default function AddItemPage() {
             <div className="relative mx-auto w-full max-w-xs overflow-hidden rounded-2xl bg-warm-100 shadow-sm ring-1 ring-warm-200/60">
               <div className="relative aspect-[4/5]">
                 <Image
-                  src={MOCK_PREVIEW}
+                  src={photoPreview}
                   alt="Uploaded item preview"
                   fill
                   className="object-cover"
@@ -163,7 +234,7 @@ export default function AddItemPage() {
                 />
               </div>
               <button
-                onClick={() => setPhotoUploaded(false)}
+                onClick={clearPhoto}
                 className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-warm-900/50 text-white backdrop-blur-sm transition-colors hover:bg-warm-900/70"
               >
                 <X className="h-4 w-4" />
@@ -172,7 +243,7 @@ export default function AddItemPage() {
           )}
 
           <button
-            onClick={() => setPhotoUploaded(true)}
+            onClick={() => galleryInputRef.current?.click()}
             className="flex items-center gap-1.5 text-sm font-medium text-blush-500 hover:text-blush-600"
           >
             <ImageIcon className="h-4 w-4" />
@@ -188,7 +259,6 @@ export default function AddItemPage() {
             Add item details
           </h2>
 
-          {/* Name */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-warm-700">
               Item name
@@ -204,7 +274,6 @@ export default function AddItemPage() {
             />
           </div>
 
-          {/* Category */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-warm-700">
               Category
@@ -225,7 +294,6 @@ export default function AddItemPage() {
             </select>
           </div>
 
-          {/* Color */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-warm-700">
               Color
@@ -257,7 +325,6 @@ export default function AddItemPage() {
             </div>
           </div>
 
-          {/* Season (multi-select) */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-warm-700">
               Season
@@ -279,7 +346,6 @@ export default function AddItemPage() {
             </div>
           </div>
 
-          {/* Formality (single-select) */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-warm-700">
               Formality
@@ -303,7 +369,6 @@ export default function AddItemPage() {
             </div>
           </div>
 
-          {/* Custom tags */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-warm-700">
               Custom tags
@@ -360,15 +425,17 @@ export default function AddItemPage() {
           </p>
 
           <div className="overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60">
-            <div className="relative aspect-[4/5] w-full max-w-xs mx-auto bg-warm-100">
-              <Image
-                src={MOCK_PREVIEW}
-                alt="Item preview"
-                fill
-                className="object-cover"
-                sizes="320px"
-              />
-            </div>
+            {photoPreview && (
+              <div className="relative aspect-[4/5] w-full max-w-xs mx-auto bg-warm-100">
+                <Image
+                  src={photoPreview}
+                  alt="Item preview"
+                  fill
+                  className="object-cover"
+                  sizes="320px"
+                />
+              </div>
+            )}
             <div className="space-y-3 p-5">
               <h3 className="text-lg font-semibold text-warm-900">
                 {formData.name || "Untitled Item"}
@@ -412,6 +479,12 @@ export default function AddItemPage() {
               </div>
             </div>
           </div>
+
+          {errorMsg && (
+            <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+              {errorMsg}
+            </div>
+          )}
         </div>
       )}
 
@@ -420,6 +493,7 @@ export default function AddItemPage() {
         {currentStep > 1 ? (
           <button
             onClick={() => setCurrentStep((s) => s - 1)}
+            disabled={saving}
             className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-warm-200 bg-surface py-3 text-sm font-medium text-warm-700 transition-colors hover:bg-warm-50 active:bg-warm-100"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -450,10 +524,15 @@ export default function AddItemPage() {
         ) : (
           <button
             onClick={handleSave}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blush-600 active:bg-blush-600"
+            disabled={saving}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blush-500 py-3 text-sm font-medium text-white transition-colors hover:bg-blush-600 active:bg-blush-600 disabled:opacity-60"
           >
-            <Check className="h-4 w-4" />
-            Save to Wardrobe
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            {saving ? "Saving..." : "Save to Wardrobe"}
           </button>
         )}
       </div>

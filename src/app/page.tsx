@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Sparkles, Luggage, Plus, ChevronRight, Shirt, FolderOpen, CalendarPlus } from "lucide-react";
-import { clothingItems, wardrobeStats } from "@/data/wardrobe";
+import { getWardrobeItems, computeWardrobeStats, type ClothingItem } from "@/lib/queries/wardrobe";
 import DailyLookModule from "@/components/DailyLookModule";
 
 function getGreeting() {
@@ -42,11 +43,25 @@ const quickActions = [
   },
 ];
 
-const recentItems = clothingItems
-  .sort((a, b) => a.addedDaysAgo - b.addedDaysAgo)
-  .slice(0, 6);
-
 export default function HomePage() {
+  const [items, setItems] = useState<ClothingItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getWardrobeItems().then(setItems).finally(() => setLoading(false));
+  }, []);
+
+  const recentItems = [...items].sort((a, b) => a.addedDaysAgo - b.addedDaysAgo).slice(0, 6);
+  const stats = computeWardrobeStats(items);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 px-4 py-6 lg:px-6 lg:py-8">
       {/* Greeting */}
@@ -121,17 +136,17 @@ export default function HomePage() {
           {[
             {
               label: "Total items",
-              value: wardrobeStats.totalItems,
+              value: stats.totalItems,
               icon: Shirt,
             },
             {
               label: "Categories",
-              value: wardrobeStats.categories,
+              value: stats.categories,
               icon: FolderOpen,
             },
             {
               label: "Added this month",
-              value: wardrobeStats.addedThisMonth,
+              value: stats.addedThisMonth,
               icon: CalendarPlus,
             },
           ].map(({ label, value, icon: Icon }) => (

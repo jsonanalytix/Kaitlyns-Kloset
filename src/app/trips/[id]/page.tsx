@@ -1,8 +1,9 @@
-import { trips } from "@/data/trips";
 import TripDetailClient from "./trip-detail-client";
 
-export function generateStaticParams() {
-  return trips.map((trip) => ({ id: trip.id }));
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  return [{ id: "__placeholder__" }];
 }
 
 export default async function TripDetailPage({

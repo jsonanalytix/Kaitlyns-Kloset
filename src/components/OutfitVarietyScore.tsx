@@ -1,12 +1,41 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Palette, ArrowUp, ArrowDown, Minus } from "lucide-react";
-import { currentMonthStats, previousMonthStats } from "@/data/calendar";
+import { getMonthlyStats, type MonthlyStats } from "@/lib/queries/calendar";
 
 export default function OutfitVarietyScore() {
+  const [currentStats, setCurrentStats] = useState<MonthlyStats | null>(null);
+  const [prevStats, setPrevStats] = useState<MonthlyStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    Promise.all([
+      getMonthlyStats(year, month),
+      getMonthlyStats(prevYear, prevMonth),
+    ]).then(([current, prev]) => {
+      setCurrentStats(current);
+      setPrevStats(prev);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading || !currentStats || !prevStats) {
+    return (
+      <div className="rounded-2xl bg-gradient-to-br from-blush-50/80 to-surface p-5 shadow-sm ring-1 ring-warm-200/60">
+        <div className="h-24 animate-pulse rounded-lg bg-warm-100" />
+      </div>
+    );
+  }
+
   const { outfitCombinations, uniqueItemsWorn, wardrobeUtilization } =
-    currentMonthStats;
-  const prevCombinations = previousMonthStats.outfitCombinations;
+    currentStats;
+  const prevCombinations = prevStats.outfitCombinations;
   const delta = outfitCombinations - prevCombinations;
 
   const encouragement =

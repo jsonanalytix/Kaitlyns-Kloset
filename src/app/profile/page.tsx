@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,7 +15,7 @@ import {
   Heart,
   MapPin,
 } from "lucide-react";
-import { userProfile } from "@/data/user";
+import { getProfile, type UserProfile } from "@/lib/queries/user";
 
 const menuItems = [
   {
@@ -55,31 +56,49 @@ const menuItems = [
   },
 ];
 
-const statItems = [
-  { label: "Items", value: userProfile.stats.totalItems, icon: Shirt },
-  { label: "Outfits saved", value: userProfile.stats.outfitsSaved, icon: Heart },
-  { label: "Trips planned", value: userProfile.stats.tripsPlanned, icon: MapPin },
-];
-
 export default function ProfilePage() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProfile()
+      .then(setProfile)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || !profile) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
+
+  const statItems = [
+    { label: "Items", value: profile.stats.totalItems, icon: Shirt },
+    { label: "Outfits saved", value: profile.stats.outfitsSaved, icon: Heart },
+    { label: "Trips planned", value: profile.stats.tripsPlanned, icon: MapPin },
+  ];
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
       {/* User card */}
       <div className="flex flex-col items-center rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-warm-200/60">
         <div className="relative h-20 w-20 overflow-hidden rounded-full bg-warm-100 ring-4 ring-blush-100">
           <Image
-            src={userProfile.avatarUrl}
-            alt={userProfile.name}
+            src={profile.avatarUrl}
+            alt={profile.name}
             fill
             className="object-cover"
             sizes="80px"
           />
         </div>
         <h1 className="mt-3 text-xl font-bold text-warm-900">
-          {userProfile.name}
+          {profile.name}
         </h1>
         <p className="mt-0.5 text-sm text-warm-400">
-          Member since {userProfile.memberSince}
+          Member since {profile.memberSince}
         </p>
       </div>
 

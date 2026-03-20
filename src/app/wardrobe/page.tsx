@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, SlidersHorizontal, Plus, ChevronDown, Inbox } from "lucide-react";
-import { clothingItems, categories } from "@/data/wardrobe";
+import { getWardrobeItems, categories, type ClothingItem } from "@/lib/queries/wardrobe";
 
 type SortOption = "recent" | "category" | "color" | "season";
 
@@ -16,21 +16,27 @@ const sortLabels: Record<SortOption, string> = {
 };
 
 export default function WardrobePage() {
+  const [items, setItems] = useState<ClothingItem[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [showSortMenu, setShowSortMenu] = useState(false);
 
+  useEffect(() => {
+    getWardrobeItems().then(setItems).finally(() => setItemsLoading(false));
+  }, []);
+
   const filteredItems = useMemo(() => {
-    let items = clothingItems;
+    let result = items;
 
     if (activeCategory !== "All") {
-      items = items.filter((item) => item.category === activeCategory);
+      result = result.filter((item) => item.category === activeCategory);
     }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      items = items.filter(
+      result = result.filter(
         (item) =>
           item.name.toLowerCase().includes(q) ||
           item.category.toLowerCase().includes(q) ||
@@ -41,15 +47,23 @@ export default function WardrobePage() {
 
     switch (sortBy) {
       case "recent":
-        return [...items].sort((a, b) => a.addedDaysAgo - b.addedDaysAgo);
+        return [...result].sort((a, b) => a.addedDaysAgo - b.addedDaysAgo);
       case "category":
-        return [...items].sort((a, b) => a.category.localeCompare(b.category));
+        return [...result].sort((a, b) => a.category.localeCompare(b.category));
       case "color":
-        return [...items].sort((a, b) => a.color.localeCompare(b.color));
+        return [...result].sort((a, b) => a.color.localeCompare(b.color));
       case "season":
-        return [...items].sort((a, b) => a.season.localeCompare(b.season));
+        return [...result].sort((a, b) => a.season.localeCompare(b.season));
     }
-  }, [activeCategory, searchQuery, sortBy]);
+  }, [items, activeCategory, searchQuery, sortBy]);
+
+  if (itemsLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-6 lg:py-8">
@@ -57,7 +71,7 @@ export default function WardrobePage() {
         My Wardrobe
       </h1>
       <p className="mt-1 text-sm text-warm-500">
-        {clothingItems.length} items in your closet
+        {items.length} items in your closet
       </p>
 
       {/* Search bar */}
