@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { insightsData } from "@/data/user";
 import { clothingItems } from "@/data/wardrobe";
+import WearPatterns from "@/components/WearPatterns";
+import OutfitVarietyScore from "@/components/OutfitVarietyScore";
 
 const gapIcons: Record<string, React.ElementType> = {
   briefcase: Briefcase,
@@ -184,6 +186,16 @@ export default function InsightsPage() {
               )
           )}
         </div>
+      </div>
+
+      {/* Wearing Patterns */}
+      <div className="mt-6">
+        <WearPatterns />
+      </div>
+
+      {/* Outfit Variety Score */}
+      <div className="mt-6">
+        <OutfitVarietyScore />
       </div>
 
       {/* Seasonal Readiness */}

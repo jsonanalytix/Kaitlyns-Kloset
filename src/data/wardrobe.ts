@@ -10,6 +10,7 @@ export interface ClothingItem {
   fabricWeight: string;
   tags: string[];
   addedDaysAgo: number;
+  wearCount: number;
 }
 
 export const clothingItems: ClothingItem[] = [
@@ -25,6 +26,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Favorite", "Brunch staple"],
     addedDaysAgo: 2,
+    wearCount: 8,
   },
   {
     id: "2",
@@ -38,6 +40,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Everyday", "Goes with everything"],
     addedDaysAgo: 5,
+    wearCount: 15,
   },
   {
     id: "3",
@@ -51,6 +54,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Date night staple"],
     addedDaysAgo: 3,
+    wearCount: 5,
   },
   {
     id: "4",
@@ -64,6 +68,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Cozy", "Layering piece"],
     addedDaysAgo: 7,
+    wearCount: 6,
   },
   {
     id: "5",
@@ -77,6 +82,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Everyday", "Favorite"],
     addedDaysAgo: 1,
+    wearCount: 18,
   },
   {
     id: "6",
@@ -90,6 +96,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Date night staple", "Layering piece"],
     addedDaysAgo: 4,
+    wearCount: 4,
   },
   {
     id: "7",
@@ -103,6 +110,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Layering piece", "Goes with everything"],
     addedDaysAgo: 10,
+    wearCount: 12,
   },
   {
     id: "8",
@@ -116,6 +124,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Brunch staple", "Favorite"],
     addedDaysAgo: 6,
+    wearCount: 7,
   },
   {
     id: "9",
@@ -129,6 +138,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Classic", "Work-ready"],
     addedDaysAgo: 14,
+    wearCount: 3,
   },
   {
     id: "10",
@@ -142,6 +152,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Heavy",
     tags: ["Goes with everything", "Fall staple"],
     addedDaysAgo: 20,
+    wearCount: 11,
   },
   {
     id: "11",
@@ -155,6 +166,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Everyday", "Layering piece"],
     addedDaysAgo: 8,
+    wearCount: 14,
   },
   {
     id: "12",
@@ -168,6 +180,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Work-ready", "Classic"],
     addedDaysAgo: 30,
+    wearCount: 7,
   },
   {
     id: "13",
@@ -181,6 +194,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Weekend vibes", "Travel-friendly"],
     addedDaysAgo: 12,
+    wearCount: 6,
   },
   {
     id: "14",
@@ -194,6 +208,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Everyday", "Favorite"],
     addedDaysAgo: 45,
+    wearCount: 16,
   },
   {
     id: "15",
@@ -207,6 +222,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Date night staple", "Special occasion"],
     addedDaysAgo: 25,
+    wearCount: 2,
   },
   {
     id: "16",
@@ -220,6 +236,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Heavy",
     tags: ["Cozy", "Layering piece"],
     addedDaysAgo: 9,
+    wearCount: 5,
   },
   {
     id: "17",
@@ -233,6 +250,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Classic", "Date night staple", "Favorite"],
     addedDaysAgo: 40,
+    wearCount: 4,
   },
   {
     id: "18",
@@ -246,6 +264,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Vacation", "Beach day"],
     addedDaysAgo: 15,
+    wearCount: 1,
   },
   {
     id: "19",
@@ -259,6 +278,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Work-ready", "Classic"],
     addedDaysAgo: 18,
+    wearCount: 8,
   },
   {
     id: "20",
@@ -272,6 +292,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Weekend vibes", "Everyday"],
     addedDaysAgo: 11,
+    wearCount: 9,
   },
   {
     id: "21",
@@ -285,6 +306,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Special occasion", "Date night staple"],
     addedDaysAgo: 22,
+    wearCount: 1,
   },
   {
     id: "22",
@@ -298,6 +320,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Everyday", "Travel-friendly"],
     addedDaysAgo: 35,
+    wearCount: 13,
   },
   {
     id: "23",
@@ -311,6 +334,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Layering piece", "Travel-friendly"],
     addedDaysAgo: 28,
+    wearCount: 0,
   },
   {
     id: "24",
@@ -324,6 +348,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Midweight",
     tags: ["Classic", "Goes with everything"],
     addedDaysAgo: 50,
+    wearCount: 10,
   },
   {
     id: "25",
@@ -337,6 +362,7 @@ export const clothingItems: ClothingItem[] = [
     fabricWeight: "Lightweight",
     tags: ["Weekend vibes", "Vacation"],
     addedDaysAgo: 16,
+    wearCount: 3,
   },
 ];
 
