@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Pencil, Trash2, X } from "lucide-react";
@@ -16,8 +16,19 @@ import {
   type Outfit,
 } from "@/lib/queries/outfits";
 
+function useRouteId(prefix: string): string {
+  const [id, setId] = useState("");
+  useEffect(() => {
+    const match = window.location.pathname.match(
+      new RegExp(`${prefix}/([^/]+)`),
+    );
+    if (match) setId(match[1]);
+  }, [prefix]);
+  return id;
+}
+
 export default function ItemDetailClient() {
-  const { id } = useParams<{ id: string }>();
+  const id = useRouteId("/wardrobe");
   const router = useRouter();
   const [item, setItem] = useState<ClothingItem | null>(null);
   const [relatedOutfits, setRelatedOutfits] = useState<Outfit[]>([]);
@@ -30,7 +41,7 @@ export default function ItemDetailClient() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!id || id === "__placeholder__") return;
+    if (!id) return;
 
     let cancelled = false;
 

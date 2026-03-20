@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -20,6 +19,17 @@ import {
 import { getTripById, forgottenEssentials, type Trip } from "@/lib/queries/trips";
 import { getWardrobeItems, type ClothingItem } from "@/lib/queries/wardrobe";
 
+function useRouteId(prefix: string): string {
+  const [id, setId] = useState("");
+  useEffect(() => {
+    const match = window.location.pathname.match(
+      new RegExp(`${prefix}/([^/]+)`),
+    );
+    if (match) setId(match[1]);
+  }, [prefix]);
+  return id;
+}
+
 function getItemById(itemId: string, items: ClothingItem[]) {
   return items.find((item) => item.id === itemId);
 }
@@ -32,7 +42,7 @@ const essentialIcons: Record<string, React.ElementType> = {
 };
 
 export default function TripDetailClient() {
-  const { id } = useParams<{ id: string }>();
+  const id = useRouteId("/trips");
   const [trip, setTrip] = useState<Trip | null>(null);
   const [allItems, setAllItems] = useState<ClothingItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +51,7 @@ export default function TripDetailClient() {
   const [packedItems, setPackedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (!id || id === "__placeholder__") return;
+    if (!id) return;
     Promise.all([getTripById(id), getWardrobeItems()]).then(
       ([tripData, itemsData]) => {
         setTrip(tripData);
