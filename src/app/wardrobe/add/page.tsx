@@ -30,7 +30,7 @@ const colorSwatches = [
   { name: "Charcoal", hex: "#4A4A4A" },
 ];
 
-const MOCK_PREVIEW = "https://picsum.photos/seed/new-item-upload/400/500";
+const MOCK_PREVIEW = "https://images.unsplash.com/photo-1558171813-4c088753af8f?w=400&h=500&fit=crop";
 
 const steps = [
   { number: 1, label: "Photo" },

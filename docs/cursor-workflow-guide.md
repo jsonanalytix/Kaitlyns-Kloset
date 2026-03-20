@@ -1,6 +1,6 @@
 # Building a Frontend UI with Cursor — Step-by-Step Guide
 
-This guide walks you through the full workflow: starting from a concept document, generating a PRD, and building out a complete frontend UI — all inside Cursor using the AI agent.
+This guide walks you through the full workflow: starting from a concept document, generating a PRD, creating a build plan, and building out a complete frontend UI — all inside Cursor using the AI agent.
 
 ---
 
@@ -94,75 +94,71 @@ The PRD (Product Requirements Document) breaks your concept into buildable phase
 
 ---
 
-### Step 2: Build Phase 1 (Project Foundation)
+### Step 2: Generate the Build Plan
 
-Phase 1 creates the actual project, installs everything, and builds the app's skeleton — the layout, navigation, and overall look.
+The build plan takes your PRD and turns it into a single checklist file. Each checkbox is one round of work you'll hand to a fresh agent. You work through the list from top to bottom — same prompt every time, no editing required.
 
-**Start a new conversation** and paste this prompt:
-
----
-
-> Read the PRD at `@docs/PRD.md` and build **Phase 1**.
->
-> This is a brand new project. You need to:
-> 1. Set up the project using the tech stack from the PRD (Next.js + Tailwind CSS)
-> 2. Install all necessary dependencies
-> 3. Build everything described in Phase 1 — the app layout, navigation, global styles, and any screens listed
-> 4. Use realistic placeholder/mock data so the UI looks populated and real (example names, photos from picsum.photos or similar, realistic numbers)
-> 5. Make sure the design is modern, clean, and mobile-friendly
-> 6. Make sure the app runs without errors
->
-> When everything is working:
-> - Initialize a git repository if one doesn't exist
-> - Create a GitHub repository for this project using the GitHub CLI (`gh repo create`)
-> - Make an initial commit with a clear message and push to GitHub
->
-> When done, confirm Phase 1 is complete and tell me exactly how to view the app in my browser.
+**Start a new conversation.** At the bottom of the chat input, click the mode selector and switch to **Plan** mode. Then paste this prompt:
 
 ---
 
-**What happens next:** The agent will spend a few minutes creating files, installing packages, and building. When it finishes, it will tell you something like: *"Run `npm run dev` and open http://localhost:3000."*
+> Read the PRD at `@docs/PRD.md` and create a step-by-step build plan. Save it as `docs/build-plan.md`.
+>
+> Requirements:
+> - Convert every phase from the PRD into one or more checklist tasks using markdown checkboxes (`- [ ]`)
+> - Each task should be a self-contained unit of work that one agent session can complete in a single conversation
+> - Each task must include enough detail that a fresh agent can complete it **without** reading the PRD — list the specific pages, components, mock data, and UI elements to build
+> - **Task 1** must include: setting up the Next.js + Tailwind CSS project, installing all dependencies, building everything described in Phase 1 of the PRD, initializing a git repository, and creating a GitHub repository using the GitHub CLI (`gh repo create`)
+> - **Every task** must end with this exact instruction: *"When everything is working and the app runs without errors, commit all changes to git with a clear message describing what was built, and push to GitHub."*
+> - Include notes about using realistic placeholder/mock data (example names, images from picsum.photos or similar, realistic numbers) — the app should look populated and real after every task
+> - Each task should produce something visually complete — a user should be able to open the app and see polished, real-looking screens after every task
+> - Order the tasks so each one builds on the previous ones
+>
+> Do NOT write any code. Only produce the build plan document.
+
+---
+
+**What to do after:** Read through the build plan. Each checkbox is one round of work. Make sure the tasks flow logically and nothing from the PRD was left out. If you want to adjust anything, tell the agent in the same conversation: *"Break that task into two smaller ones"* or *"Add a task for the settings page."*
+
+---
+
+### Step 3: Build the App (One Task at a Time)
+
+Now you work through the build plan, one checkbox at a time. **You use the exact same prompt every time — no editing, no swapping out phase numbers.**
+
+**Start a new conversation** (switch back to **Agent** mode if you're still in Plan mode) and paste this prompt:
+
+---
+
+> Read the build plan at `@docs/build-plan.md`. Find the first unchecked task (the first line starting with `- [ ]`) and complete everything it describes.
+>
+> Requirements:
+> - Build exactly what the task specifies
+> - Use realistic placeholder/mock data wherever the UI would normally show real data
+> - Keep the design consistent with what's already built — same colors, fonts, spacing, and style
+> - Make sure the entire app runs without errors after your changes
+> - Follow the commit and push instructions included in the task
+> - After committing and pushing, mark the task as complete by changing its `- [ ]` to `- [x]` in `docs/build-plan.md`
+>
+> Confirm when the task is complete and tell me how to view the app in my browser.
+
+---
+
+**This is the only prompt you need for the entire build.** Paste the exact same thing in a new conversation for every task. The agent reads the plan, finds the next unchecked box, builds it, pushes the code to GitHub, and checks it off. You never have to edit the prompt.
 
 #### How to View Your App
 
-After the agent finishes, you should see the app running. If not:
+After the first task completes (the one that sets up the project), the agent will tell you how to run the app. From then on:
 
 1. Open Cursor's terminal (`Ctrl + backtick`)
 2. Type `npm run dev` and press Enter
 3. Open your browser (Chrome, Safari, etc.) and go to **http://localhost:3000**
 
-You should see your app. Leave the terminal running — it's your local server. If you close Cursor or the terminal, you'll need to run `npm run dev` again next time.
+Leave the terminal running — it's your local server. After each subsequent task, just refresh your browser to see the new screens. If you close Cursor or the terminal, you'll need to run `npm run dev` again next time.
 
----
+#### Tracking Your Progress
 
-### Step 3: Build Each Remaining Phase
-
-Repeat this for Phase 2, Phase 3, etc. **Start a new conversation for each phase.**
-
-Paste this prompt and change the phase number:
-
----
-
-> Read the PRD at `@docs/PRD.md` and build **Phase [NUMBER]**.
->
-> The previous phases are already complete and working. Now build everything described in Phase [NUMBER].
->
-> Requirements:
-> - Follow the PRD specifications for this phase exactly
-> - Use realistic placeholder/mock data wherever the UI would normally show real data
-> - Keep the design consistent with what's already built — same colors, fonts, spacing, and style
-> - Make sure the entire app still runs without errors after your changes
-> - The UI should look polished and complete, not like a wireframe
->
-> When everything is working:
-> - Commit all changes to git with a clear message describing what was built
-> - Push to GitHub
->
-> Confirm when this phase is complete.
-
----
-
-**Repeat until all phases are done.** After each phase, refresh your browser to see the new screens and features.
+Open `docs/build-plan.md` at any time to see where you stand — checked boxes are done, unchecked boxes are what's left. **Repeat until all boxes are checked.**
 
 ---
 
@@ -258,7 +254,7 @@ This is your live site. Anyone with the link can open it in their browser — on
 
 #### Automatic updates
 
-From this point on, every time you push to GitHub (which the agent does at the end of each phase or design session), Cloudflare will automatically rebuild and update the live site within a couple of minutes. You don't need to touch the Cloudflare dashboard again.
+From this point on, every time you push to GitHub (which the agent does at the end of each task or design session), Cloudflare will automatically rebuild and update the live site within a couple of minutes. You don't need to touch the Cloudflare dashboard again.
 
 #### If the deploy fails
 
@@ -309,17 +305,17 @@ Here's the full sequence from start to finish:
 |------|------------|-------------------|
 | 1 | Paste the PRD prompt with your concept doc | Yes |
 | 2 | Review the PRD, request any changes | Same conversation |
-| 3 | Paste the Phase 1 prompt | **Yes — new conversation** |
-| 4 | View the app in your browser | — |
-| 5 | Paste the Phase 2 prompt | **Yes — new conversation** |
-| 6 | Refresh browser, check progress | — |
-| 7 | Repeat for each remaining phase | **Yes — new conversation each time** |
-| 8 | Iterate on design with plain-language requests | **Yes — new conversation** |
-| 9 | Continue design tweaks as long as you want | Same or new, your call |
+| 3 | Switch to Plan mode, paste the build plan prompt | **Yes — new conversation** |
+| 4 | Review the plan, request any changes | Same conversation |
+| 5 | Switch to Agent mode, paste the build prompt | **Yes — new conversation** |
+| 6 | View the app in your browser | — |
+| 7 | Paste the **same** build prompt for each remaining task | **Yes — new conversation each time** |
+| 8 | Refresh browser after each task, check your progress | — |
+| 9 | Iterate on design with plain-language requests | **Yes — new conversation** |
 | 10 | Deploy to Cloudflare Pages (agent configures, you connect in dashboard) | **Yes — new conversation** |
 | 11 | Share your live URL — site auto-updates on every push | — |
 
-Each phase takes roughly 5–10 minutes for the agent to build. A 3–5 phase project can go from concept to full UI in under an hour. After deploying to Cloudflare Pages, every future push updates the live site automatically.
+Each task takes roughly 5–10 minutes for the agent to build. A typical project has 5–8 tasks and can go from concept to full UI in under an hour. After deploying to Cloudflare Pages, every future push updates the live site automatically.
 
 ---
 
