@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Sparkles, Luggage, Plus, ChevronRight, Shirt, FolderOpen, CalendarPlus } from "lucide-react";
 import { clothingItems, wardrobeStats } from "@/data/wardrobe";
-import { outfitOfTheDay } from "@/data/outfits";
+import DailyLookModule from "@/components/DailyLookModule";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -46,10 +46,6 @@ const recentItems = clothingItems
   .sort((a, b) => a.addedDaysAgo - b.addedDaysAgo)
   .slice(0, 6);
 
-const ootdItems = clothingItems.filter((item) =>
-  outfitOfTheDay.itemIds.includes(item.id)
-);
-
 export default function HomePage() {
   return (
     <div className="mx-auto w-full max-w-3xl space-y-8 px-4 py-6 lg:px-6 lg:py-8">
@@ -78,6 +74,9 @@ export default function HomePage() {
           </Link>
         ))}
       </section>
+
+      {/* Your Daily Look */}
+      <DailyLookModule />
 
       {/* Recently Added */}
       <section>
@@ -110,36 +109,6 @@ export default function HomePage() {
               <p className="text-[10px] text-warm-400">{item.category}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Outfit of the Day */}
-      <section>
-        <h2 className="mb-3 text-base font-semibold text-warm-900">
-          Outfit of the day
-        </h2>
-        <div className="overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60">
-          <div className="grid grid-cols-4 gap-px bg-warm-100">
-            {ootdItems.map((item) => (
-              <div key={item.id} className="relative aspect-square bg-warm-50">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 25vw, 180px"
-                />
-              </div>
-            ))}
-          </div>
-          <div className="p-4">
-            <h3 className="font-semibold text-warm-900">
-              {outfitOfTheDay.name}
-            </h3>
-            <p className="mt-1 text-sm leading-relaxed text-warm-500">
-              {outfitOfTheDay.description}
-            </p>
-          </div>
         </div>
       </section>
 
