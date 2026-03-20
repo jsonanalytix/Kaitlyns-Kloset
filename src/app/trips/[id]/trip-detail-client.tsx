@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -30,7 +31,8 @@ const essentialIcons: Record<string, React.ElementType> = {
   "battery-charging": BatteryCharging,
 };
 
-export default function TripDetailClient({ id }: { id: string }) {
+export default function TripDetailClient() {
+  const { id } = useParams<{ id: string }>();
   const [trip, setTrip] = useState<Trip | null>(null);
   const [allItems, setAllItems] = useState<ClothingItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ export default function TripDetailClient({ id }: { id: string }) {
   const [packedItems, setPackedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (!id || id === "__placeholder__") return;
     Promise.all([getTripById(id), getWardrobeItems()]).then(
       ([tripData, itemsData]) => {
         setTrip(tripData);

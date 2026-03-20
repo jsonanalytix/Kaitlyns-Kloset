@@ -1,17 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Pencil, Trash2, X } from "lucide-react";
-import { clothingItems } from "@/data/wardrobe";
-import { getOutfitsForItem } from "@/data/outfits";
+import {
+  getItemById,
+  getItemsByIds,
+  deleteItem,
+  type ClothingItem,
+} from "@/lib/queries/wardrobe";
+import {
+  getOutfitsForItem,
+  type Outfit,
+} from "@/lib/queries/outfits";
 
-export default function ItemDetailClient({ id }: { id: string }) {
-  const item = clothingItems.find((i) => i.id === id);
+export default function ItemDetailClient() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const [item, setItem] = useState<ClothingItem | null>(null);
+  const [relatedOutfits, setRelatedOutfits] = useState<Outfit[]>([]);
+  const [outfitItemsMap, setOutfitItemsMap] = useState<
+    Record<string, ClothingItem[]>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  if (!item) {
+  useEffect(() => {
+    if (!id || id === "__placeholder__") return;
+
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const fetched = await getItemById(id);
+        if (cancelled) return;
+        if (!fetched) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+        setItem(fetched);
+
+        const outfits = await getOutfitsForItem(id);
+        if (cancelled) return;
+        setRelatedOutfits(outfits);
+
+        const allItemIds = [
+          ...new Set(outfits.flatMap((o) => o.itemIds)),
+        ];
+        if (allItemIds.length > 0) {
+          const items = await getItemsByIds(allItemIds);
+          if (cancelled) return;
+          const map: Record<string, ClothingItem[]> = {};
+          for (const outfit of outfits) {
+            map[outfit.id] = outfit.itemIds
+              .map((oid) => items.find((i) => i.id === oid))
+              .filter((i): i is ClothingItem => i != null);
+          }
+          setOutfitItemsMap(map);
+        }
+      } catch {
+        if (!cancelled) setNotFound(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const handleDelete = useCallback(async () => {
+    if (!item) return;
+    setDeleting(true);
+    try {
+      await deleteItem(item.id);
+      router.push("/wardrobe");
+    } catch {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  }, [item, router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blush-200 border-t-blush-500" />
+      </div>
+    );
+  }
+
+  if (notFound || !item) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-20 text-center">
         <p className="text-lg font-semibold text-warm-800">Item not found</p>
@@ -25,15 +110,8 @@ export default function ItemDetailClient({ id }: { id: string }) {
     );
   }
 
-  const relatedOutfits = getOutfitsForItem(item.id);
-  const outfitItems = (outfitItemIds: string[]) =>
-    outfitItemIds
-      .map((oid) => clothingItems.find((ci) => ci.id === oid))
-      .filter(Boolean);
-
   return (
     <div className="mx-auto w-full max-w-3xl pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:pb-8">
-      {/* Hero image */}
       <div className="relative aspect-[4/5] w-full bg-warm-100 sm:aspect-[3/2]">
         <Image
           src={item.imageUrl}
@@ -98,24 +176,22 @@ export default function ItemDetailClient({ id }: { id: string }) {
                   className="w-56 shrink-0 overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-warm-200/60"
                 >
                   <div className="grid grid-cols-3 gap-px bg-warm-100">
-                    {outfitItems(outfit.itemIds)
+                    {(outfitItemsMap[outfit.id] ?? [])
                       .slice(0, 3)
-                      .map((oi) =>
-                        oi ? (
-                          <div
-                            key={oi.id}
-                            className="relative aspect-square bg-warm-50"
-                          >
-                            <Image
-                              src={oi.imageUrl}
-                              alt={oi.name}
-                              fill
-                              className="object-cover"
-                              sizes="80px"
-                            />
-                          </div>
-                        ) : null
-                      )}
+                      .map((oi) => (
+                        <div
+                          key={oi.id}
+                          className="relative aspect-square bg-warm-50"
+                        >
+                          <Image
+                            src={oi.imageUrl}
+                            alt={oi.name}
+                            fill
+                            className="object-cover"
+                            sizes="80px"
+                          />
+                        </div>
+                      ))}
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-medium text-warm-800">
@@ -175,10 +251,11 @@ export default function ItemDetailClient({ id }: { id: string }) {
                 Cancel
               </button>
               <button
-                onClick={() => setShowDeleteDialog(false)}
-                className="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
               >
-                Delete
+                {deleting ? "Deleting…" : "Delete"}
               </button>
             </div>
           </div>

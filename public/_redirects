@@ -1,0 +1,4 @@
+/wardrobe/add  /wardrobe/add  200
+/wardrobe/:id  /wardrobe/__placeholder__.html  200
+/trips/new  /trips/new  200
+/trips/:id  /trips/__placeholder__.html  200
