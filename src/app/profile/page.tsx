@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   BarChart3,
+  CalendarDays,
   Clock,
   ChevronRight,
   Settings,
@@ -21,6 +22,12 @@ const menuItems = [
     href: "/profile/insights",
     icon: BarChart3,
     description: "Score, gap analysis & style tips",
+  },
+  {
+    label: "Outfit Calendar",
+    href: "/calendar",
+    icon: CalendarDays,
+    description: "Your daily outfit diary",
   },
   {
     label: "Outfit History",

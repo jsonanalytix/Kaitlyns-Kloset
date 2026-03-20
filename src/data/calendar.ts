@@ -418,6 +418,18 @@ export const currentMonthStats: MonthlyStats = {
   wardrobeUtilization: 84,
 };
 
+// --- Previous month stats (February 2026) ---
+
+export const previousMonthStats: MonthlyStats = {
+  daysLogged: 12,
+  totalWeekdays: 20,
+  uniqueItemsWorn: 20,
+  mostWornItem: { itemId: "10", wearCount: 5 },
+  currentStreak: 2,
+  outfitCombinations: 12,
+  wardrobeUtilization: 72,
+};
+
 // --- Helpers ---
 
 export function getEntryForDate(date: string): CalendarEntry | undefined {
